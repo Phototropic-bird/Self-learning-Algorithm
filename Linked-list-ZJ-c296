@@ -1,38 +1,40 @@
 //============================================================================
 // Concept     : 串列鏈結 (linked list) 
-// Notice	     : 此作法不是 Joseph algorithm，而是將每個死人乖乖算出來 (ZJ 上會 TLE)
+// Notice	   : 此作法不是 Joseph algorithm，而是將每個死人乖乖算出來 (ZJ 上會 TLE)
 // Description : c296. APCS-2016-1029-3定時K彈 from ZeroJudge
 //============================================================================
 #include <iostream>
 using namespace std;
-struct player{
-	int data;
-	int next;
-};
-int main() {
-	int N /*個人*/,M/*第淘汰*/,K/*汰個*/;
-	cin>>N>>M>>K;
-	struct player list[N];
-	for(int i=0 ; i<N-1 ; i++){
-		list[i].data=i+1;
-		list[i].next=i+1;
-	}
-	list[N-1].data=N;
-	list[N-1].next=0;                        //串串列
-	int answer;
-	int current=0;
-	if(M>=2){
-		for(int j=0 ; j<K ; j++){
-			for(int i=0 ; i<M-2 ; i++){
-				current=list[current].next;                 //current 一直是next ，所以不會有指到已刪去的陣列[i]的問題。
-			}
-			list[current].next=list[list[current].next].next;
-			current=list[current].next;
-		}
-		answer=list[current].data;
-	}else{
-		answer=list[K].data;
-	}
-	cout<<answer<<endl;
-}
+struct node{
+    int name;	//每個物件的初始編號
+    int next;	//每個物件的初始下家
+} a[200010];	//物件導向
 
+int main(){
+	int n,m,k;
+	cin>>n>>m>>k;
+
+	for(int i=1; i<n; i++){
+        a[i].name=i;
+        a[i].next=i+1;
+    }
+    a[n].name=n;
+    a[n].next=1;	//創造一個初始環狀串列
+	int now=1,pre=n;
+    int t=0;	//紀錄爆炸幾次
+    int num=0;
+    while(t!=k){
+        num++;	//計算經過幾個人
+        if(num==m){	//經過m個人了
+            a[pre].next=a[now].next;	//刪除死人
+            t++;	//爆炸數++
+            num=0;	//重新數人
+            now=a[now].next;	//更改now 為死人的下家
+        }else{
+            pre=now;
+            now=a[now].next;	//不斷往下走，更新now,pre
+        }
+    }
+    cout<<a[now].name;
+	return 0;
+}
