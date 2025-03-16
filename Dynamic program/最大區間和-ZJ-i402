@@ -1,0 +1,55 @@
+//============================================================================
+// Concept     : 最大區間和
+// Description : i402 內積 from ZeroJudge
+//============================================================================
+#include <bits/stdc++.h>
+using namespace::std;
+#define ll long long
+ll a[1000],b[1000];
+ll n,m;
+ll ans=INT_MIN;
+void swap(ll &a,ll &b){
+	ll s=a;
+	a=b;
+	b=s;
+}
+ll mmax(ll a,ll b){
+	if(a>=b) return a;
+	else return b;
+}
+int main(){
+	ios_base::sync_with_stdio(0);
+	cin.tie(0);
+	cin>>n>>m;
+	if(n>m){
+		for(ll i=0;i<n;i++) cin>>a[i];		//a陣列比較長
+		for(ll i=0;i<m;i++) cin>>b[i];
+	}else{
+		for(ll i=0;i<n;i++) cin>>b[i];
+		for(ll i=0;i<m;i++) cin>>a[i];
+		swap(n,m);
+	}
+	ll tmp=0;
+	for(ll i=-m+1;i<n;i++){
+		for(ll j=0;j<m;j++){
+			if((j+i)<0 || (j+i)>=n) continue;
+			tmp+=b[j]*a[i+j];
+			ans=mmax(ans,tmp);
+			tmp=mmax(tmp,0);
+		}
+		tmp=0;
+	}
+	for(int i=0;i<m/2;i++) swap(b[i],b[m-1-i]);
+	for(ll i=-m+1;i<n;i++){
+		for(ll j=0;j<m;j++){
+			if((j+i)<0 || (j+i)>=n) continue;
+			tmp+=b[j]*a[i+j];
+			ans=mmax(ans,tmp);
+			tmp=mmax(tmp,0);
+		}
+		tmp=0;
+	}
+
+	cout<<ans;
+	return 0;
+}
