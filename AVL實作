@@ -1,0 +1,315 @@
+//============================================================================
+// Concept     : AVL
+// Notice	     : 將AVL作為一個class, 可以找尋、新增及刪除元素
+// Description : AVL 資料結構實作
+//============================================================================
+#include<bits/stdc++.h>
+using namespace::std;
+class tn{
+    public:
+    int key;
+    tn* left=NULL;
+    tn* right=NULL;
+    tn* parent=NULL;
+    int l_height=0;
+    int r_height=0;
+};
+typedef tn node;
+typedef node* Node;
+
+
+class AVL{
+    private:
+    Node a_find(int k){
+        if(this->sz==0) return NULL;
+        Node it=this->root;
+        while(it!=NULL){
+            if(k==it->key) break;
+            if(k<it->key) it=it->left;
+            else it=it->right;
+        }
+        return it;
+    }
+    void update_height(Node n){
+        while(n->parent!=NULL){
+            if(n->key>n->parent->key) n->parent->r_height=max(n->l_height,n->r_height)+1;   //right child node
+            else n->parent->l_height=max(n->l_height,n->r_height)+1;
+            n=n->parent;
+        }
+    }
+    void LL(Node n){
+        Node A=n;
+        Node B=n->left;
+        Node C=B->left;
+        if(A==root) root=B;
+        //exchange subtree
+        if(A->parent!=NULL){
+            if(A->key>A->parent->key) A->parent->right=B;
+            else A->parent->left=B;
+        }
+        B->parent=A->parent;
+
+
+        A->left=B->right;
+        if(B->right!=NULL) B->right->parent=A;
+        B->right=A;
+        A->parent=B;
+        //update the height
+        A->l_height= (A->left==NULL) ? 0 : (max(A->left->l_height,A->left->l_height)+1);
+        B->r_height=max(B->right->l_height,B->right->r_height)+1;
+        update_height(B);
+    }
+    void RR(Node n){
+        Node A=n;
+        Node B=n->right;
+        Node C=B->right;
+        if(A==root) root=B;
+        //exchange subtree
+        if(A->parent!=NULL){
+            if(A->key>A->parent->key) A->parent->right=B;
+            else A->parent->left=B;
+        }
+        B->parent=A->parent;
+
+
+        A->right=B->left;
+        if(B->left!=NULL) B->left->parent=A;
+        B->left=A;
+        A->parent=B;
+        // update the height
+        A->r_height= (A->right==NULL) ? 0 : (max(A->right->l_height,A->right->r_height)+1);
+        B->l_height=max(B->left->l_height,B->left->r_height)+1;
+        update_height(B);
+    }
+    void LR(Node n){
+        Node A=n;
+        Node B=n->left;
+        Node C=B->right;
+        if(A==root) root=C;
+        //exchage subtree
+        if(A->parent!=NULL){
+            if(A->key>A->parent->key) A->parent->right=C;
+            else A->parent->left=C;
+        }
+        C->parent=A->parent;
+
+
+        B->right=C->left;
+        if(C->left!=NULL) C->left->parent=B;
+        A->left=C->right;
+        if(C->right!=NULL) C->right->parent=A;
+        C->left=B;
+        B->parent=C;
+        C->right=A;
+        A->parent=C;
+        //update the height
+        B->r_height= (B->right==NULL) ? 0 : (max(B->right->l_height,B->right->r_height)+1);
+        A->l_height= (A->left==NULL) ? 0 : (max(A->left->l_height,A->left->r_height)+1);
+        C->l_height=max(C->left->l_height,C->left->r_height)+1;
+        C->r_height=max(C->right->l_height,C->right->r_height)+1;
+        update_height(C);
+    }
+    void RL(Node n){
+        Node A=n;
+        Node B=n->right;
+        Node C=B->left;
+        if(A==root) root=C;
+        //exchange subtree
+        if(A->parent!=NULL){
+            if(A->key>A->parent->key) A->parent->right=C;
+            else A->parent->left=C;
+        }
+        C->parent=A->parent;
+
+
+        A->right=C->left;
+        if(C->left!=NULL) C->left->parent=A;
+        B->left=C->right;
+        if(C->right!=NULL) C->right->parent=B;
+        C->left=A;
+        A->parent=C;
+        C->right=B;
+        B->parent=C;
+        //update the height
+        A->r_height= (A->right==NULL) ? 0 : (max(A->right->l_height,A->right->r_height)+1);
+        B->l_height= (B->left==NULL) ? 0 : (max(B->left->l_height,B->left->r_height)+1);
+        C->l_height=max(C->left->l_height,C->left->r_height)+1;
+        C->r_height=max(C->right->l_height,C->right->r_height)+1;
+        update_height(C);
+    }
+    void check_if_balance(Node n){
+        while(n->parent!=NULL && abs(n->l_height-n->r_height)<=1){
+            if(n->key>n->parent->key){  //right child node
+                n->parent->r_height=max(n->l_height,n->r_height)+1;
+            }else{
+                n->parent->l_height=max(n->l_height,n->r_height)+1;
+            }
+            n=n->parent;
+        }
+        if(abs(n->l_height-n->r_height)<=1) return; //tree is still balance
+
+
+        //tree is not balance
+        int t=check_balance_type(n);
+        switch (t){
+        case 1:
+            LL(n);
+            break;
+        case 2:
+            RR(n);
+            break;
+        case 3:
+            LR(n);
+            break;
+        case 4:
+            RL(n);
+            break;
+        }
+        return;
+    }
+    int check_balance_type(Node n){ //1-LL 2-RR 3-LR 4-RL
+        if(n->l_height>n->r_height){
+            if(n->left->l_height>n->left->r_height)return 1;
+            else return 3;
+        }else{
+            if(n->right->l_height<n->right->r_height) return 2;
+            else return 4;
+        }
+    }
+    Node find_replacement(Node n){
+        Node rt;
+        if(n->left!=NULL){  //find inorder predecessor
+            rt=n->left;
+            while(rt->right!=NULL) rt=rt->right;
+        }else{  //find inorder successor
+            rt=n->right;
+            while(rt->left!=NULL) rt=rt->left;
+        }
+        return rt;
+    }
+    public:
+    int sz=0;
+    Node root=NULL;
+    void dele(int k){
+        Node n=a_find(k);
+        if(n==NULL){
+            cout<<"Key does not exist"<<endl;
+            return;
+        }
+        if(n==root && sz==1){   //only a root
+            root=NULL;
+            sz--;
+            return;
+        }
+        if(n->left==NULL && n->right==NULL){    //leaf
+            Node par=n->parent;
+            if(n->key>par->key){
+                par->right=NULL;
+                par->r_height--;
+            }else{
+                par->left=NULL;
+                par->l_height--;
+            }
+            free(n);
+            check_if_balance(par);
+            sz--;
+            return;
+        }  
+        //other part
+        Node rp=find_replacement(n);
+        int replacing_key=rp->key;
+        dele(rp->key);
+        n->key=replacing_key;
+
+
+        return;
+    }
+    void add(int k){
+        if(sz==0){  //no tree
+            Node a=new node;
+            a->key=k;
+            root=a;
+            sz++;
+            return;
+        }
+        //otherwise
+        Node pre=NULL,cur=root;
+        bool flag=0;
+        while(cur!=NULL){   //find his parent
+            pre=cur;
+            if(k==cur->key){
+                flag=1;
+                break;
+            }
+            if(k>cur->key) cur=cur->right;
+            else cur=cur->left;
+        }
+        if(flag){
+            cout<<"Already have one"<<endl;
+            return;
+        }
+        Node a=new node;
+        a->key=k;
+        a->parent=pre;
+        if(k>pre->key){     //add node //change parent height
+            pre->right=a;
+            pre->r_height++;
+        }else{
+            pre->left=a;
+            pre->l_height++;
+        }
+        check_if_balance(pre);
+
+
+        sz++;
+
+
+        return;
+    }
+    vector<int>* get_preorder(Node n,vector<int> *vc){
+        if(n==NULL) return NULL;
+        (*vc).push_back(n->key);
+        get_preorder(n->left,vc);
+        get_preorder(n->right,vc);
+        return vc;
+    }
+    vector<int>* get_inorder(Node n,vector<int> *vc){
+        if(n==NULL) return NULL;
+        get_inorder(n->left,vc);
+        (*vc).push_back(n->key);
+        get_inorder(n->right,vc);
+        return vc;
+    }
+    vector<int>* get_postorder(Node n,vector<int> *vc){
+        if(n==NULL) return NULL;
+        get_postorder(n->left,vc);
+        get_postorder(n->right,vc);
+        (*vc).push_back(n->key);
+        return vc;
+    }
+};
+void show_array(vector<int>* a){
+    if(a==NULL) return;
+    cout<<"SHOW ARRAY : ";
+    for(auto v : (*a)) cout<<v<<" ";
+    cout<<endl;
+}
+int main(){
+    AVL tree;
+    vector<int> *res=new vector<int>;
+    int a[20]={5,15,8,6,14,23,7,18,20,16,22,23,2,98,1,63,35,34,78,90};
+    for(int i=0; i<10; i++){
+        tree.add(a[i]);
+    }
+    tree.get_preorder(tree.root,res);
+    show_array(res);
+    (*res).clear();
+    for(int i=0; i<5; i++){
+        tree.dele(a[i]);
+    }
+    tree.get_preorder(tree.root,res);
+    show_array(res);
+    (*res).clear();
+    return 0;
+}
+
