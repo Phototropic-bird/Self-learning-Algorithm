@@ -1,0 +1,60 @@
+//============================================================================
+// Concept     : BIT (樹狀樹組)
+// Description : d799. 区间求和 from ZeroJudge
+//============================================================================
+#include <bits/stdc++.h>
+using namespace::std;
+#define ll long long
+ll a[500000+1];
+ll d1[500000+1],d2[500000+1];
+ll n,q;
+ll lowbit(ll i){return (i&(-i));}
+
+void modify(ll pos,ll val){   //單點修改
+    ll v1=val*pos;
+    while(pos<=n){
+        d1[pos]+=val;
+        d2[pos]+=v1;
+        pos+=lowbit(pos);
+    }
+}
+void adding(ll l,ll r,ll val){   //單點修改
+    modify(l,val);
+    modify(r+1,-val);
+}
+ll getsum(ll *t,ll pos){    //差分前綴和=單點值
+    ll ans=0;
+    while(pos>0){
+        ans+=t[pos];
+        pos-=lowbit(pos);
+    }
+    return ans;
+}
+ll query(ll l,ll r){    //單點值代進公式求區間和
+    l--;
+    ll f=(l+1)*getsum(d1,l)-getsum(d2,l);
+    ll b=(r+1)*getsum(d1,r)-getsum(d2,r);
+    return b-f;
+}
+int main(){
+    memset(d1,0,sizeof(d1));
+    memset(d2,0,sizeof(d2));
+    cin>>n;
+    a[0]=0;
+    for(ll i=1; i<=n; i++){
+        cin>>a[i];
+        modify(i,a[i]-a[i-1]); //build the tree
+    }
+    cin>>q;
+    ll v,x,y,k;
+    for(ll i=1; i<=q; i++){
+        cin>>v>>x>>y;
+        if(v==1){
+            cin>>k;
+            adding(x,y,k);
+        }else{
+            cout<<query(x,y)<<endl;
+        }
+    }
+    return 0;
+}
