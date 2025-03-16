@@ -1,0 +1,37 @@
+//============================================================================
+// Concept     : 位元運算
+// Description : e288. 互補CP from ZeroJudge
+//============================================================================
+#include <bits/stdc++.h>
+using namespace::std;
+int cvt(char c){
+	int a= c<='Z'?c-'A' : c-'a'+26;
+	return a;
+}
+int main(){
+	ios_base::sync_with_stdio(0);
+	cin.tie(0);
+	cout.tie(0);
+	int m,n;
+	cin>>m>>n;
+	unordered_map<long long,long long> cp;
+	for(int i=0;i<n;i++){
+		string s;
+		cin>>s;
+		long long tmp=0;
+		for(auto v : s){
+			tmp|=(long long)1<<(cvt(v));		//2的38次方要用long long
+		}
+		cp[tmp]++;
+	}
+	long long ans=0;
+	for(auto v:cp){
+		long long to_find=v.first^(((long long)1<<m)-1);		//取xor要和m個1取，如果和0取會和原本一樣
+		auto it=cp.find(to_find);
+		if(it!=cp.end()){
+			ans+=v.second*(*it).second;
+		}
+	}
+	cout<<ans/2;
+	return 0;
+}
