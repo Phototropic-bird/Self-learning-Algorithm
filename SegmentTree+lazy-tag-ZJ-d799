@@ -1,0 +1,85 @@
+
+//1-base
+#include <bits/stdc++.h>
+using namespace std;
+#define ll long long
+void push(ll);
+ll query(ll,ll,ll,ll,ll);
+ll build_tree(ll,ll,ll);
+void modify(ll,ll,ll,ll,ll,ll);
+
+class tn{
+    public:
+    ll val=0;		//該節點的值(區間和)
+    ll tag=0;		//懶人標記
+    ll s=0;		    //區間長度
+    ll rv(){		//回傳實際值(搭配lazy tag的值)
+        return val+tag*s;
+    }
+};
+vector<tn> seg;
+vector<ll> a;
+
+	ll build_tree(ll L,ll R,ll node){
+	    seg[node].s=R-L+1;		//每個節點所涵蓋的區間長度
+	    if(L==R){seg[node].val=a[L];return a[L];}	//葉節點(只有一個數)
+	    ll med=(L+R)/2;
+	     //以遞迴的回傳值賦值
+	    seg[node].val=build_tree(L,med,2*node+1)+build_tree(med+1,R,2*node+2);
+	    return seg[node].val;	//回傳此節點值
+	}
+
+	void modify(ll L,ll R,ll fl,ll fr,ll k,ll node){
+	    if(R<fl || fr<L) return;	//此節點和操作區間無交集
+	    if(L==R){seg[node].tag+=k;return;}	//葉節點且有交集//貼懶標
+        if(fl<=L && R<=fr){	//此節點完全被包含在要操作的區間
+        seg[node].tag+=k;	//貼懶標
+	        return;	    }
+	   //操作區間完全被包含在此節點 或 操作區間和此節點半交集
+        ll med=(L+R)/2;
+	    modify(L,med,fl,fr,k,2*node+1);
+	    modify(med+1,R,fl,fr,k,2*node+2);
+	     //因為lazy tag往下推，更新其值(要用實際值)
+	    seg[node].val=seg[2*node+1].rv()+seg[2*node+2].rv();
+	}
+
+	ll query(ll L,ll R,ll ql,ll qr,ll node){
+	    if(ql>R || qr<L) return 0;	//此節點和查詢區間無交集
+	    if(L==R){return seg[node].rv();}	//有交集，葉節點
+	    if(ql<=L && R<=qr){		//此節點完全被包含在要詢問的區間
+	        return seg[node].rv();	//不用推懶標，直接回傳實際值
+	    }
+	//詢問區間完全被包含在此節點 或 詢問區間和此節點半交集
+	    push(node);	//往下推此節點的標(為了求得其子點的實際值)
+	    ll med=(L+R)/2;
+	//遞回求回傳值
+	    return query(L,med,ql,qr,2*node+1)+query(med+1,R,ql,qr,2*node+2);
+    }
+void push(ll node){
+    seg[2*node+1].tag+=seg[node].tag;	//推到左子
+    seg[2*node+2].tag+=seg[node].tag;	//推到右子
+    seg[node].val=seg[node].rv();	//更新其值為實際值
+    seg[node].tag=0;	//因為懶標下推了
+}
+int main(){ 
+    ll N,Q,v,x,y,k;
+    cin>>N;
+    a.resize(N+1);
+    for(ll i=1; i<=N; i++){
+        cin>>a[i];
+    }
+    seg.resize(N*4);
+    cin>>Q;
+    build_tree(1,N,0);	  //初始化
+    while(Q--){
+        cin>>v;
+        if(v==1){	//操作
+            cin>>x>>y>>k;
+            modify(1,N,x,y,k,0);
+        }else{	//詢問
+            cin>>x>>y;
+            cout<<query(1,N,x,y,0)<<endl;
+        }
+    }
+    return 0;
+}
