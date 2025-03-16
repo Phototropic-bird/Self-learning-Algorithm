@@ -1,0 +1,59 @@
+//============================================================================
+// Concept     : 佇列 + BFS
+// Description : f166. 傳送點 from ZeroJudge
+//============================================================================
+#include<bits/stdc++.h>
+using namespace::std;
+#define N 1000010
+int a[N];
+bool vis[N];
+int n,p,l,r;
+queue<int> qe;
+int solve(){
+    int sz=1;
+    int t;
+    int step=0;
+    vis[0]=1;
+    bool flag=0;
+    int ft,sc;
+    while(!qe.empty()){
+        t=0;
+        while(sz!=0){
+            ft=qe.front();
+            qe.pop();
+            sz--;
+            if(ft==p){
+                flag=1;
+                break;
+            }
+            int right=ft+r;
+            int left=ft-l;
+            if(right<n && a[right]>=0 && a[right]<n && !vis[right]){
+                t++;
+                vis[right]=1;
+                qe.push(a[right]);
+            }
+            if(left>=0 && a[left]>=0 && a[left]<n && !vis[left]){
+                t++;
+                vis[left]=1;
+                qe.push(a[left]);
+            }
+        }
+        if(flag) break;
+        sz=t;
+        step++;
+    }
+    if(flag) return step;
+    else return -1;
+}
+int main(){
+    ios_base::sync_with_stdio(0);
+    cin.tie(0);
+    cout.tie(0);
+    cin>>n>>p>>l>>r;
+    memset(vis,0,sizeof(0));
+    for(int i=0; i<n; i++) cin>>a[i];
+    qe.push(0);
+    cout<<solve();
+    return 0;
+}
