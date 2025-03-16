@@ -1,0 +1,37 @@
+//============================================================================
+// Concept     : 遞迴
+// Description : f637 DF-expression from ZeroJuge
+//============================================================================
+
+#include <iostream>
+#include <string>
+#include <vector>
+using namespace std;
+string s;
+
+int dfunc(long it,long length,long n,long &ans){
+	long t=0;
+	for(long i=it;i<length;i++){
+		if(s[i]=='2'){
+			i=dfunc(i+1,length,n/2,ans);
+			t++;
+		}else if(s[i]=='1'){
+			ans+=n*n;
+			t++;
+		}else{
+			t++;
+		}
+		if(t==4) return i;
+	}
+}
+int main() {
+	long n;
+	long ans=0;
+	cin>>s;
+	cin.ignore();
+	cin>>n;
+	long length=s.length();
+	dfunc(0,length,n,ans);
+	cout<<ans;
+	return 0;
+}
