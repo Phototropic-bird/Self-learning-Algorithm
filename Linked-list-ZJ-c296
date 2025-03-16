@@ -1,0 +1,38 @@
+//============================================================================
+// Concept     : 串列鏈結 (linked list) 
+// Notice	     : 此作法不是 Joseph algorithm，而是將每個死人乖乖算出來 (ZJ 上會 TLE)
+// Description : c296. APCS-2016-1029-3定時K彈 from ZeroJudge
+//============================================================================
+#include <iostream>
+using namespace std;
+struct player{
+	int data;
+	int next;
+};
+int main() {
+	int N /*個人*/,M/*第淘汰*/,K/*汰個*/;
+	cin>>N>>M>>K;
+	struct player list[N];
+	for(int i=0 ; i<N-1 ; i++){
+		list[i].data=i+1;
+		list[i].next=i+1;
+	}
+	list[N-1].data=N;
+	list[N-1].next=0;                        //串串列
+	int answer;
+	int current=0;
+	if(M>=2){
+		for(int j=0 ; j<K ; j++){
+			for(int i=0 ; i<M-2 ; i++){
+				current=list[current].next;                 //current 一直是next ，所以不會有指到已刪去的陣列[i]的問題。
+			}
+			list[current].next=list[list[current].next].next;
+			current=list[current].next;
+		}
+		answer=list[current].data;
+	}else{
+		answer=list[K].data;
+	}
+	cout<<answer<<endl;
+}
+
