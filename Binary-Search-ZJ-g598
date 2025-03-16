@@ -1,0 +1,71 @@
+//============================================================================
+// Concept     : Binary Search + DFS
+// Description : g598 真假子圖 from ZeroJudge
+//============================================================================
+#include <bits/stdc++.h>
+using namespace::std;
+#define N 20005
+#define M 10005
+#define ll long long
+ll n,m,p,k;
+vector<ll> g[N];
+vector<ll> WA;
+ll vis[N];
+ll x,y;
+vector<pair<ll,ll>> dat[M];
+bool dfs(ll pos,ll t){
+    if(vis[pos]) return 1;
+    bool ans=1;
+    vis[pos]=t;
+    for(auto v : g[pos]){
+        if(vis[v]==t) return false;
+        ans &=dfs(v,3-t);
+    }
+    return ans;
+}
+bool check(ll pos){    //if t is correct till pos
+    bool ans=1;
+    for(ll i=0; i<n; i++){
+        g[i].clear();
+        vis[i]=0;
+    }
+    for(ll i=0; i<=pos; i++){
+        for(auto [u,v] : dat[i]){
+            g[u].push_back(v);
+            g[v].push_back(u);
+        }
+    }
+    for(ll i=0; i<n; i++){
+        ans &=dfs(i,1);
+    }
+    return ans;
+}
+void find_WA(ll l,ll r){
+    if(check(r)) return;    //inspect if there is WA in it
+    while(l<r){
+        ll med=(l+r)/2;
+        if(check(med)) l=med+1;
+        else r=med;
+    }
+    WA.push_back(l);
+    dat[l].clear();
+}
+signed main(){
+    cin>>n>>m;
+    for(ll i=0; i<m; i++){
+        cin>>x>>y;
+        dat[0].push_back({x,y});
+    }
+    cin>>p>>k;
+    for(ll i=1; i<=p ;i++){
+        for(ll j=0; j<k; j++){
+            cin>>x>>y;
+            dat[i].push_back({x,y});
+        }
+    }
+    for(ll i=0; i<3; i++){
+        find_WA(1,p);
+    }
+    for(auto val : WA) cout<<val<<endl;
+    return 0;
+}
