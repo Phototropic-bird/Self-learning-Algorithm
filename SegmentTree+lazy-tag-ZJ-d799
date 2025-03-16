@@ -1,4 +1,9 @@
 
+//============================================================================
+// Concept     : Segment Tree + Lazy Tag
+// Description : d799. 区间求和 from ZeroJudge
+//============================================================================
+
 //1-base
 #include <bits/stdc++.h>
 using namespace std;
