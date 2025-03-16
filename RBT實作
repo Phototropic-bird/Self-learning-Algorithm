@@ -1,0 +1,423 @@
+//============================================================================
+// Concept     : RBT (紅黑樹)
+// Notice      : 主函式中可以insert, delete, query key所對應到的value。並在您的操作後，以preoder view 由上到下，輸出棵樹的狀態
+// Description : RBT 實作
+//============================================================================
+#include<bits/stdc++.h>
+using namespace::std;
+class tn{
+    public:
+ pair<int,int> val;
+ int color=1;   //1 black//2 red
+ tn* lc=NULL;
+ tn* rc=NULL;
+ tn* parent=NULL;
+};
+typedef tn Node;
+typedef Node* node;
+
+node root = NULL;
+node cur;
+node backup1;   
+node backup2;
+node backup3;
+
+int insert_type=0; //1 LL // 2 RR // 3 RL // 4 LR
+
+void swap(node n);
+
+//INSERTION
+node insert_add(int v,int value);
+bool check(node n);
+node BD(int v);
+void insertion(int value,int VALUE,int D);
+
+//DELETION
+void deal_DB(node n,int fla);
+node find_delete_node(int value);
+node simple_delete(node y);
+void deal_DB(node n,int fla);
+void deletion(node n);
+
+//Spin
+void LL_spin(node node2,node node3){
+    if(node3==root) root=node2;
+    node2->parent=node3->parent;
+    if(node3->parent!=NULL){
+     if(node3->val.first<node3->parent->val.first) node3->parent->lc=node2;
+    else node3->parent->rc=node2;
+    }
+    node3->parent=node2;
+
+    node3->lc=node2->rc;
+    if(node2->rc!=NULL) node2->rc->parent=node3;
+
+    node2->rc=node3;
+}
+
+void RR_spin(node node2,node node3){
+    if(node3==root) root=node2;
+    node2->parent=node3->parent;
+    if(node3->parent!=NULL){
+    if(node3->val.first<node3->parent->val.first) node3->parent->lc=node2;
+    else node3->parent->rc=node2;}
+    node3->parent=node2;
+
+    node3->rc=node2->lc;
+    if(node2->lc!=NULL) node2->lc->parent=node3;
+
+    node2->lc=node3;
+}
+void swap(node n){
+    n->color=3-n->color;
+}
+node insert_add(int key,int value){
+    char flag1='0',flag2='0';   //L R
+    node n=new Node;
+    n->val.first=key;
+    n->val.second=value;
+    n->color=2;
+    if(root==NULL){
+        n->color=1;
+        root=n;
+        return n;
+    }
+    cur=root;
+    while(cur != NULL){
+        flag2=flag1;
+        backup3=backup2;
+        backup2=backup1;
+        backup1=cur;
+        if(key>cur->val.first){
+            flag1='R';
+            cur=cur->rc;
+        }else{
+            flag1='L';
+            cur=cur->lc;
+        }
+    }
+
+    if(flag1=='L' && flag2=='L') insert_type=1;
+    else if(flag1=='R' && flag2=='R') insert_type=2;
+    else if(flag2=='R' && flag1=='L') insert_type=3;
+    else if(flag2=='L' && flag1=='R') insert_type=4;
+
+    if(key > backup1->val.first){
+        backup1->rc=n;
+    }else{
+        backup1->lc=n;
+    }
+    n->parent=backup1;
+
+    backup3=backup2;
+    backup2=backup1;
+    backup1=n;
+    return n;
+}
+
+bool check(node n){
+    if(n->parent!=NULL && n->parent->color==2) return false;
+    if(n==root) n->color=1;
+    return true;
+}
+node BD(int v){
+    char flag1='0',flag2='0';   //L R
+    cur=root;
+    while(cur != NULL){
+        backup3=backup2;
+        backup2=backup1;
+        backup1=cur;
+        if(cur->val.first==v) break;
+        flag2=flag1;
+        if(v>cur->val.first){
+            flag1='R';
+            cur=cur->rc;
+        }else{
+            flag1='L';
+            cur=cur->lc;
+        }
+    }
+    if(flag1=='L' && flag2=='L') insert_type=1;
+    else if(flag1=='R' && flag2=='R') insert_type=2;
+    else if(flag2=='R' && flag1=='L') insert_type=3;
+    else if(flag2=='L' && flag1=='R') insert_type=4;
+    return backup1;
+}
+void insertion(int key,int value,int D){
+    node t;
+    if(D){
+        t=BD(key);
+    }else{
+        t=insert_add(key,value);
+    }
+    if(check(t)) return;
+    if(backup3->lc!=NULL && backup3->rc!=NULL && backup3->lc->color==2 && backup3->rc->color==2){    //check if uncle is red
+        swap(backup3);
+        swap(backup3->lc);
+        swap(backup3->rc);
+        insertion(backup3->val.first,-1,1);
+    }else{  //uncle is black
+        switch (insert_type)
+        {
+        case 1: //LL
+            LL_spin(backup2,backup3);
+            swap(backup2);
+            swap(backup3);
+        break;
+        case 2: //RR
+            RR_spin(backup2,backup3);
+            swap(backup2);
+            swap(backup3);
+        break;
+        case 3: //RL
+            if(backup3==root) root=backup1;
+            backup1->parent=backup3->parent;
+            if(backup3->parent!=NULL){
+            if(backup3->val.first<backup3->parent->val.first) backup3->parent->lc=backup1;
+            else backup3->parent->rc=backup1;}
+
+            backup2->lc=backup1->rc;
+            backup3->rc=backup1->lc;
+            if(backup1->rc!=NULL) backup1->rc->parent=backup2;
+            if(backup1->lc!=NULL) backup1->lc->parent=backup3;
+
+            backup3->parent=backup1;
+            backup2->parent=backup1;
+            backup1->lc=backup3;
+            backup1->rc=backup2;
+            swap(backup1);
+            swap(backup3);
+        break;
+        case 4: //LR
+            if(backup3==root) root=backup1;
+            backup1->parent=backup3->parent;
+            if(backup3->parent!=NULL){
+            if(backup3->val.first<backup3->parent->val.first) backup3->parent->lc=backup1;
+            else backup3->parent->rc=backup1;}
+
+            backup2->rc=backup1->lc;
+            backup3->lc=backup1->rc;
+            if(backup1->lc!=NULL) backup1->lc->parent=backup2;
+            if(backup1->lc!=NULL) backup1->lc->parent=backup3;
+
+            backup3->parent=backup1;
+            backup2->parent=backup1;
+            backup1->lc=backup2;
+            backup1->rc=backup3;
+            swap(backup1);
+            swap(backup3);
+        default:
+            break;
+        }
+        
+    }
+    insert_type=0;
+}
+
+node find_delete_node(int key){
+        cur=root;
+    while(cur!=NULL){
+        backup1=cur;
+        if(key==cur->val.first) break;
+        else if(key<cur->val.first) cur=cur->lc;
+        else cur=cur->rc;
+    }   //delete node is cur
+    return cur;
+}
+node simple_delete(node y){
+    node DB;
+    if(y->lc==NULL && y->rc==NULL){ //no child
+        if(y->color==2){  //red node no child
+            if(y->parent!=NULL){  //change his parent's child
+                if(y->val.first<y->parent->val.first) y->parent->lc=NULL;
+                else y->parent->rc=NULL;
+            }
+            delete y;
+            return NULL;    //no DB
+        }else{  //black node no child
+            if(y==root){
+                root=NULL;
+                delete y;
+                return NULL; //no DB
+            }else{  //DB happen
+                DB=y;
+                return DB;    //DB happen
+            }
+        }
+    }else if(y->rc==NULL){ //delete node is black //lc is red and single
+        y->val.first=y->lc->val.first;
+        y->val.second=y->lc->val.second;
+        delete y->lc;
+        y->lc=NULL;
+        return NULL;
+    }else if(y->lc==NULL){    //delete node is black //rc is red and single
+        y->val.first=y->rc->val.first;
+        y->val.second=y->rc->val.second;
+        delete y->rc;
+        y->rc=NULL;
+        return NULL;
+    }else{//both child exist // delete node can be either black or red
+        node replacing_n=y->rc;
+        node backup;
+        while(replacing_n!=NULL){ //find smallest in right subtree 
+            backup=replacing_n;
+            replacing_n=replacing_n->lc;
+        }
+        replacing_n=backup;
+        y->val.first=replacing_n->val.first;
+        y->val.second=replacing_n->val.second;
+        deletion(replacing_n);
+        return NULL;
+    }
+}
+void deal_DB(node n,int fla){
+    if(n==root) return;
+    node p=n->parent;
+    if(n->val.first<n->parent->val.first){
+        node s=n->parent->rc;
+        if(s->color==1){
+            if(s->rc!=NULL && s->rc->color==2){
+                int temp=p->color;  //Exchange color of S and P
+                p->color=s->color;
+                s->color=temp;
+                
+                RR_spin(s,p);   //rotate p toward DB
+                swap(s->rc);    //swap
+
+                if(fla==1){ //remove DB
+                    if(n->val.first<n->parent->val.first) n->parent->lc=NULL;
+                    else n->parent->rc=NULL;
+                    delete n;
+                }
+            }else if(s->lc!=NULL && s->lc->color==2){
+                node near_child=s->lc;
+                swap(s->lc);
+                swap(s);
+
+                LL_spin(near_child,s);  //rotate sibling oppsite DB
+
+                deal_DB(n,fla); //apply case D
+            }else{
+                swap(s);
+                if(p->color==2) p->color=1;
+                else deal_DB(p,2);  //turn p into DB
+                if(fla==1){ //remove DB
+                    if(n->val.first<n->parent->val.first) n->parent->lc=NULL;
+                    else n->parent->rc=NULL;
+                    delete n;
+                }
+            }
+        }else{  //Sibling is Red
+            swap(p);
+            swap(s);
+
+            RR_spin(s,p);   //rotate p toward DB
+
+            deal_DB(n,fla); //apply cases
+        }
+    }else{
+        node s=n->parent->lc;
+        if(s->color==1){    //S=Black
+            if(s->lc!=NULL && s->lc->color==2){
+                int temp=p->color;  //Exchange color
+                p->color=s->color;
+                s->color=temp;
+
+                LL_spin(s,p);   //rotate p toward DB
+
+                swap(s->lc);
+
+                if(fla==1){ //remove DB
+                    if(n->val.first<n->parent->val.first) n->parent->lc=NULL;
+                    else n->parent->rc=NULL;
+                    delete n;
+                }
+            }else if(s->rc!=NULL && s->rc->color==2){
+                node near_child=s->rc;
+                swap(near_child);
+                swap(s);
+
+                RR_spin(near_child,s);  //rotate sibling oppsite DB
+
+                deal_DB(n,fla); //apply case D
+            }else{
+                swap(s);
+                if(p->color==2) p->color=1;
+                else deal_DB(p,2);  //turn p into DB    //can't delete p so fla = 2
+                if(fla==1){ //remove DB
+                    if(n->val.first<n->parent->val.first) n->parent->lc=NULL;
+                    else n->parent->rc=NULL;
+                    delete n;
+                }
+            }
+        }else{  //S=Red
+            swap(p);
+            swap(s);
+
+            LL_spin(s,p);   //rotate p toward DB
+
+            deal_DB(n,fla); //apply cases
+        }
+    }
+}
+void deletion(node n){
+    node rt=simple_delete(n);
+    if(rt==NULL) return;    //no DB
+    else deal_DB(rt,1);   //rt is DB
+}
+
+void preorderview(node n){
+    if(n==NULL){
+        return;
+    }else{
+        preorderview(n->lc);
+        cout<<n->val.first<<" "<<n->val.second;
+        if(n->color==1) cout<<" BLACK"<<endl;
+        else cout<<" RED"<<endl;
+        preorderview(n->rc);
+    }
+}
+int query(int key){
+    cur=root;
+    node backup;
+    while(cur!=NULL){
+        if(key==cur->val.first) return cur->val.second;
+        if(key>cur->val.first)  cur=cur->rc;
+        else cur=cur->lc;
+    }
+    return -1;
+}
+
+int main(){
+    int i,x,y;
+    do{
+        cout<<"Please Input your operation : 1 for insert, 2 for delete, 3 for query, others to quit : ";
+        cin>>i;
+        
+        if(i==1){
+            cout<<"Please input the new key : ";
+            cin>>x;
+            cout<<"Please input the value of the key : ";
+            cin>>y;
+            cout<<"INSERTION--the key is : "<<x<<"  the elemetn is : "<<y<<endl;
+            insertion(x,y,0);
+        }else if(i==2){
+            cout<<"Please input the key you want to delete: ";
+            cin>>x;
+            cout<<"DELETION~~~~~~"<<x<<endl;
+            deletion(find_delete_node(x));
+        }else if(i==3){
+            cout<<"Please input the key you want to query: ";
+            cin>>x;
+            cout<<query(x)<<endl;
+        }else{
+            cout<<"OUT"<<endl;
+            break;
+        }
+    }while(1);
+
+    preorderview(root);
+
+    return 0;
+}
+
