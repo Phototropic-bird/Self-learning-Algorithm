@@ -1,0 +1,34 @@
+//============================================================================
+// Concept     : 堆疊
+// Description : a565. 2.p&q的邂逅 from ZeroJudge
+//============================================================================
+#include <bits/stdc++.h>
+using namespace::std;
+
+int solve(string s){    //傳入字串
+    int sz=s.size();    //紀錄字串大小，以便遍歷
+    stack<char> st;
+    int ans=0;  //紀錄答案
+    for(int i=0; i<sz; i++){
+        if(s[i]!='.'){
+    if(!st.empty()&&s[i]=='q'&&st.top()=='p'){
+                ans++;  //若將塞入元素為q，且堆疊頂端為得湊為一對。
+                st.pop();   //刪去以配對的p
+            }else st.push(s[i]);    //若都不符，直接塞入
+        }
+    }
+    return ans;
+}
+int main(){
+    cin.tie(0); // 關乎輸入
+    ios::sync_with_stdio(false); // 關乎輸出
+    int n;
+    cin>>n;
+    string s;
+    for(int i=0; i<n; i++){
+        cin>>s;
+        cout<<solve(s)<<'\n'; 
+    }
+    
+    return 0;
+}
