@@ -1,0 +1,45 @@
+//============================================================================
+// Concept     : 0/1 Knapsack problem
+// Description : e465. 置物櫃分配 from ZeroJuge
+//============================================================================
+#include<bits/stdc++.h>
+using namespace::std;
+#define ll long long
+int m,s,n;
+ll demand;
+ll cmp(int a,int b,int j){
+	if(a>=j && b>=j ){
+		return (a-j)>(b-j)?b:a;
+	}else if(a>=j) return a;
+	else if(b>=j) return b;
+	else return 0;
+}
+int main(){
+	cin>>m>>s>>n;
+	vector<int> a(n);
+	int sum=0;
+	for(int i=0;i<n;i++){
+		cin>>a[i];
+		sum+=a[i];
+	}
+	sort(a.begin(),a.end());
+	demand =s-( m-sum );
+	int h=0;
+	for(auto v : a){
+		if(v>demand) h++;
+	}
+	if(h>0) h++;
+	else h=n;
+	ll c[m+1];
+	memset(c,0,sizeof(c));
+	for(int i=0;i<h;i++){
+		for(int j=demand ;; j--){		//每一解必需大於該次重量
+			if(j-a[i]<0){
+				c[j]=cmp(c[j],a[i],j);		//和原本背包問題不一樣的是 : 如果超重原本會直接等於未放解，這邊是會等於和上一解比較
+				break;						//較接近demand且高於的為此一解
+			}else c[j]=cmp(c[j],c[j-a[i]]+a[i],j);
+		}
+	}
+	cout<<c[demand];
+	return 0;
+}
