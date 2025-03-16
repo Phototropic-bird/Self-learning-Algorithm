@@ -1,0 +1,89 @@
+//============================================================================
+// Concept     : 樹形DP
+// Description : f582 病毒演化 from ZeroJudge
+//============================================================================
+#include <bits/stdc++.h>
+using namespace::std;
+#define N 1005
+#define ll long long
+ll n,m;
+ll ans=0;
+struct node{
+    string s;
+    vector<ll> child;
+};
+ll dp[1005][4];
+node a[N];
+ll root;
+ll look_kind(char c){
+    if(c=='A') return 0;
+    else if(c=='U') return 1;
+    else if(c=='C') return 2;
+    else return 3;
+}
+ll min(ll A,ll U,ll C,ll G){
+    ll mn=INT_MAX;
+    if(A<mn) mn=A;
+    if(U<mn) mn=U;
+    if(C<mn) mn=C;
+    if(G<mn) mn=G;
+    return mn;
+}
+ll already_know_type(char c,vector<ll> bump,ll *kind){
+    ll rt=0;
+    ll pk=look_kind(c);
+    for(ll i=0; i<4; i++) if(i!=pk) rt+=kind[i];
+    for(auto v : bump){
+        ll A=dp[v][0] + (c=='A'? 0 : 1);   // previous in every kind of @ 
+        ll U=dp[v][1] + (c=='U'? 0 : 1);
+        ll C=dp[v][2] + (c=='C'? 0 : 1);
+        ll G=dp[v][3] + (c=='G'? 0 : 1);
+        rt+=min(A,U,C,G);
+    }
+    return rt;
+}
+void run_tree(ll pos,ll id){
+    if(a[id].child.empty()) return;
+    vector<ll> bump;
+    ll kind[4]={};
+    ll previous=0;
+    for(auto v : a[id].child){
+        run_tree(pos,v);
+        if(a[v].s[pos]!='@') previous+=dp[v][0];    //previous no @
+
+        if(a[v].s[pos]=='A') kind[0]++;
+        else if(a[v].s[pos]=='U') kind[1]++;
+        else if(a[v].s[pos]=='C') kind[2]++;
+        else if(a[v].s[pos]=='G') kind[3]++;
+        else bump.push_back(v);
+    }
+    if(a[id].s[pos]!='@'){
+        dp[id][0]+=already_know_type(a[id].s[pos],bump,kind)+previous;
+    }else{
+        dp[id][0]=already_know_type('A',bump,kind)+previous;
+        dp[id][1]=already_know_type('U',bump,kind)+previous;
+        dp[id][2]=already_know_type('C',bump,kind)+previous;
+        dp[id][3]=already_know_type('G',bump,kind)+previous;
+    }
+}
+signed main(){
+    cin>>n>>m;
+    ll i,j;
+    for(ll k=1; k<=n; k++){
+        cin>>i>>j;
+        if(i==j) root=i;
+        else a[j].child.push_back(i);
+        cin>>a[i].s;
+    }
+    for(ll k=0; k<m; k++){
+        memset(dp,0,sizeof(dp));
+        run_tree(k,root);
+        if(a[root].s[k]=='@'){
+            ans+=min(dp[root][0],dp[root][1],dp[root][2],dp[root][3]);
+        }else{
+            ans+=dp[root][0];
+        }
+    }
+    cout<<ans;
+    return 0;
+}
