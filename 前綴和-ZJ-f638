@@ -1,0 +1,49 @@
+/*******************
+
+    前綴和:
+ZeroJudge f638 支點切割
+
+*********************/
+#include <bits/stdc++.h>
+using namespace std;
+#define ll long long
+vector<ll> a;
+ll ls[50005],rs[50005];
+ll ans=0;
+ll k;
+ll sol(ll st,ll en,ll level){
+	if(level>=k) return 0;
+	if(en-st<2) return 0;
+	ll delta=0;
+	for(ll i=st;i<=en;i++){
+		delta+=a[i];
+		if(i==st) ls[i]=a[i];
+		else ls[i]=ls[i-1]+delta;
+	}
+	delta=0;
+	for(ll i=en;i>=st;i--){
+		delta+=a[i];
+		if(i==en) rs[i]=a[i];
+		else rs[i]=rs[i+1]+delta;
+	}
+			//find cut
+	int small=INT_MAX;
+	ll ans;
+	for(ll i=st+1;i<=en-1;i++){
+		if(fabs(ls[i-1]-rs[i+1])<small){
+			small=fabs(ls[i-1]-rs[i+1]);
+			ans=i;
+		}
+	}
+	return a[ans]+sol(st,ans-1,level+1)+sol(ans+1,en,level+1);
+}
+int main(){
+	ll n;
+	cin>>n>>k;
+	a.resize(n);
+	for(ll i=0;i<n;i++)
+		cin>>a[i];	
+	
+	cout<<sol(0,n-1,0);
+	return 0;
+}
